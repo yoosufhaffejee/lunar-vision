@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moon Sighting Predictor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        select,
+        button,
+        input {
+            margin: 10px;
+            padding: 10px;
+            width: 100%;
+            max-width: 100%;
+            /* Ensure it does not overflow */
+            box-sizing: border-box;
+            /* Include padding and borders in the width */
+        }
+
+        .result {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h2>Moon Sighting Predictor</h2>
+
+        <label for="country">Select Country:</label>
+        <select id="country"></select>
+
+        <label for="moonSightingDatetime">Enter Sunset Time (Optional):</label>
+        <input type="datetime-local" id="moonSightingDatetime">
+
+        <button onclick="predictMoonSighting()">Check Moon Visibility</button>
+
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        // Function to set the current datetime in the input field
+        function setCurrentDatetime() {
+            const now = new Date();
+            // Format the date as 'YYYY-MM-DDTHH:MM'
+            const formattedDate = now.toISOString().slice(0, 16); // Slice to get the 'YYYY-MM-DDTHH:MM' format
+            document.getElementById('moonSightingDatetime').value = formattedDate;
+        }
+
+        // Call the function to set the current datetime when the page loads
+        //setCurrentDatetime();
+
+        // Country to country code map (You can add more as needed)
+        const countryCodes = {
+            "za": "South Africa",
+            "sa": "Saudi Arabia",
+            "pk": "Pakistan",
+            "my": "Malaysia",
+            "us": "USA",
+            "ae": "United Arab Emirates",
+            "eg": "Egypt",
+            "in": "India",
+            "ng": "Nigeria",
+            "sg": "Singapore",
+            "fr": "France",
+            "de": "Germany",
+            "gb": "United Kingdom",
+            "br": "Brazil",
+            "ca": "Canada",
+            "id": "Indonesia",
+            "ir": "Iran",
+            "tr": "Turkey",
+            "iq": "Iraq",
+            "sy": "Syria",
+            "pk": "Pakistan",
+            "dz": "Algeria",
+            "ma": "Morocco",
+            "bd": "Bangladesh",
+            "ke": "Kenya",
+            "jo": "Jordan",
+            "tn": "Tunisia",
+            "ly": "Libya",
+            "ps": "Palestine",
+            "lk": "Sri Lanka",
+            "uz": "Uzbekistan",
+            "ye": "Yemen",
+            "af": "Afghanistan",
+            "mm": "Myanmar",
+            "kh": "Cambodia",
+            "mn": "Mongolia",
+            "bh": "Bahrain",
+            "qa": "Qatar",
+            "om": "Oman",
+            "kw": "Kuwait",
+            "lv": "Latvia",
+            "ch": "Switzerland",
+            "cz": "Czech Republic",
+            "es": "Spain",
+            "it": "Italy",
+            "fi": "Finland",
+            "nl": "Netherlands",
+            "se": "Sweden",
+            "dk": "Denmark",
+            "be": "Belgium",
+            "at": "Austria",
+            "pt": "Portugal",
+            "gr": "Greece",
+            "ru": "Russia",
+            "bg": "Bulgaria",
+            "mx": "Mexico",
+            "ph": "Philippines",
+            "th": "Thailand",
+            "ba": "Bosnia and Herzegovina",
+            "xk": "Kosovo",
+            "al": "Albania",
+            "et": "Ethiopia",
+            "so": "Somalia",
+            "tz": "Tanzania",
+            "mr": "Mauritania",
+            "mw": "Malawi",
+            "sn": "Senegal",
+            "gm": "Gambia",
+            "ml": "Mali",
+            "ne": "Niger",
+            "sd": "Sudan",
+            "tj": "Tajikistan",
+            "kg": "Kyrgyzstan",
+            "kz": "Kazakhstan",
+            "tm": "Turkmenistan",
+            "lb": "Lebanon",
+            "az": "Azerbaijan",
+            "am": "Armenia"
+        };
+
+        // Dynamically generate options for the country select dropdown
+        const countrySelect = document.getElementById('country');
+        for (const code in countryCodes) {
+            const option = document.createElement('option');
+            option.value = code;
+            option.textContent = countryCodes[code];
+            countrySelect.appendChild(option);
+        }
+        async function getWeatherData(lat, lon, sightingDate) {
+            try {
+                const response = await fetch(`https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=${lat}&lon=${lon}`, {
+                    headers: { "User-Agent": "MoonSightingApp/1.0" }
+                });
+                const data = await response.json();
+
+                const timeseries = data.properties.timeseries;
+                if (!timeseries || timeseries.length === 0) return null;
+
+                // Convert sightingDate to UTC string format
+                const sightingTimeUTC = new Date(sightingDate).toISOString();
+
+                // Find the closest available weather data point
+                let closestWeather = timeseries.reduce((prev, curr) =>
+                    Math.abs(new Date(curr.time) - new Date(sightingTimeUTC)) <
+                        Math.abs(new Date(prev.time) - new Date(sightingTimeUTC)) ? curr : prev
+                );
+
+                return closestWeather?.data?.instant?.details?.cloud_area_fraction ?? null;
+            } catch (error) {
+                console.error("Weather API error:", error);
+                return null;
+            }
+        }
+
+        async function getSunsetTime(date = new Date().toISOString().split('T')[0], lat, lon) {
+            try {
+                const response = await fetch(`https://api.sunrise-sunset.org/json?lat=${lat}&lng=${lon}&date=${date}&formatted=0`);
+                const data = await response.json();
+
+                if (data.status === "OK") {
+                    const sunsetUtc = new Date(data.results.sunset);
+                    return sunsetUtc;
+                } else {
+                    console.error("Error fetching sunset time:", data.status);
+                    return null;
+                }
+            } catch (error) {
+                console.error("Fetch error:", error);
+                return null;
+            }
+        }
+
+        // Function to get the user's current location (coordinates)
+        function getUserLocation() {
+            return new Promise((resolve, reject) => {
+                if ("geolocation" in navigator) {
+                    // Request the user's current position
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            // Successfully got the user's position
+                            const { latitude, longitude } = position.coords;
+                            resolve({ lat: latitude, lon: longitude });
+                        },
+                        (error) => {
+                            // If there's an error (e.g., user denies location access)
+                            reject("Error getting location: " + error.message);
+                        }
+                    );
+                } else {
+                    reject("Geolocation is not supported by this browser.");
+                }
+            });
+        }
+
+        async function predictMoonSighting() {
+            const countryCode = document.getElementById('country').value;
+            const resultDiv = document.getElementById('result');
+            const sightingDatetime = document.getElementById('moonSightingDatetime').value;
+
+            // Check if datetime input is provided
+            // if (!sightingDatetime) {
+            //     resultDiv.innerHTML = "Error: Please enter a moon sighting datetime.";
+            //     return;
+            // }
+
+            // Fetch the moon data for the selected country
+            try {
+                const response = await fetch(`https://gh-pages-cors.haffejeeyoosuf1.workers.dev/?https://calendar-yearly.com/moon/${countryCode.toLowerCase()}/2025`);
+                const html = await response.text();
+
+                // Parse the HTML response and extract the required details
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+
+                // Get the timezone by looking for divs with the class 'w-1/3 text-gray-600 font-bold text-right pr-4 dark:text-gray-300' and then grabbing the next div
+                const timezoneElements = doc.querySelectorAll('.text-gray-600.font-bold.text-right.pr-4');
+                const timezoneElement = timezoneElements[5] ? timezoneElements[5].nextElementSibling : null; // Get the 6th div's next sibling (timezone value)
+
+
+                // Get the new moon date (the third element with the class "px-7 pt-1 font-semibold")
+                const newMoonElements = doc.querySelectorAll('.px-7.pt-1.font-semibold');
+                const newMoonElement = newMoonElements[2];  // 3rd one
+
+                if (!newMoonElement || !timezoneElement) {
+                    resultDiv.innerHTML = "Error: Unable to find new moon data.";
+                    return;
+                }
+
+                const { lat, lon } = await getUserLocation();
+
+                // Extract the new moon date and timezone
+                const newMoonDateString = newMoonElement.textContent.trim();
+                const timezone = timezoneElement.textContent.trim();
+
+                // Convert the new moon date (e.g., "March 29, 2025 12:58 PM") to Date object
+                const newMoonDate = parseDate(newMoonDateString, timezone);
+                let sightingDate = new Date(sightingDatetime);
+
+                if (!sightingDatetime) {
+                    let formattedNewMoonDate = newMoonDate.toISOString().split('T')[0];
+                    sightingDate = await getSunsetTime(formattedNewMoonDate, lat, lon);
+
+                    const offset = sightingDate.getTimezoneOffset() * 60000; // Offset in milliseconds
+                    const localDate = new Date(sightingDate - offset).toISOString().slice(0, 16);
+                    document.getElementById('moonSightingDatetime').value = localDate;
+                }
+
+                const epochTime = Math.floor(new Date(sightingDate).getTime() / 1000);
+
+                // Call the Farmsense API for moon phase data
+                const apiUrl = `https://gh-pages-cors.haffejeeyoosuf1.workers.dev/?https://api.farmsense.net/v1/moonphases/?d=${epochTime}`;
+                const apiResponse = await fetch(apiUrl);
+                const moonData = await apiResponse.json();
+
+                if (moonData.length === 0 || moonData[0].Error) {
+                    resultDiv.innerHTML = "Error fetching moon phase data.";
+                    return;
+                }
+
+                // Get weather data (cloud cover %)
+                const cloudCover = await getWeatherData(lat, lon, sightingDate);
+
+                // Get moon data
+                const moonInfo = moonData[0];
+
+                // Convert moon age from days to hours
+                //const moonAge = moonInfo.Age * 24;
+                const moonAge = (sightingDate - newMoonDate) / (1000 * 60 * 60); // Convert ms to hours
+
+                // Convert illumination to percentage
+                const illumination = moonInfo.Illumination * 100;
+
+                // Use Angular Diameter as a secondary indicator (larger moons are easier to see)
+                const angularDiameter = moonInfo.AngularDiameter;
+
+                const sightingProbability = calculateFinalProbability(moonAge, illumination, angularDiameter);
+
+                // Adjust for cloud cover if provided.
+                let cloudMessage = "";
+                if (cloudCover !== null) {
+                    if (cloudCover > 80) {
+                        finalProbability = Math.max(finalProbability - 50, 0);
+                        cloudMessage = `Unlikely in your area (~${Math.round(finalProbability)}%) - Cloudy Sky`;
+                    } else if (cloudCover > 50) {
+                        // For partly cloudy skies, reduce the final probability by 10%
+                        finalProbability = Math.max(finalProbability - 15, 0);
+                        cloudMessage = `(~${Math.round(finalProbability)}%) - Partly Cloudy`;
+                    }
+                    else if (cloudCover > 25) {
+                        finalProbability = Math.max(finalProbability - 5, 0);
+                        cloudMessage = `(~${Math.round(finalProbability)}%) - Mostly Clear`;
+                    }
+                    else {
+                        cloudMessage = `(~${Math.round(finalProbability)}%) - Clear Skies`;
+                    }
+                }
+
+                // Display results
+                resultDiv.innerHTML = `
+                    <p><strong>New Moon Born:</strong> ${newMoonDate}</p>
+
+                    <p><strong>Moon Age (Sunset):</strong> ${moonAge.toFixed(2)} hours</p>
+                    <p><strong>Illumination (Sunset):</strong> ${illumination.toFixed(1)}%</p>
+                    <p><strong>Angular Diameter (Sunset):</strong> ${angularDiameter.toFixed(2)}°</p>
+                    <p><strong>Cloud Cover (Sunset):</strong> ${cloudCover?.toFixed(1)}%</p>
+                    <p><strong>Estimated Visibility (Sunset):</strong> ${sightingProbability}</p>
+                    <p><strong>Estimated Visibility With Cloud Cover (Your Location):</strong> ${cloudMessage}</p>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = "Error fetching data. Please try again.";
+                console.error(error);
+            }
+        }
+
+        // Calculate probability for moonAge with custom thresholds and linear interpolation
+        function calcMoonAgeProbability(moonAge) {
+            let probability, message;
+            if (moonAge <= 12) {
+                probability = 5;
+                message = `Impossible (~${probability}%) - Too Young`;
+            } else if (moonAge <= 15) {
+                // Interpolate from 5% at 12 hrs to 25% at 15 hrs
+                probability = 5 + ((moonAge - 12) / (15 - 12)) * (25 - 5);
+                message = `Extremely Difficult (~${Math.round(probability)}%)`;
+            } else if (moonAge < 18) {
+                // Interpolate from 25% at 15 hrs to 50% at 18 hrs
+                probability = 25 + ((moonAge - 15) / (18 - 15)) * (50 - 25);
+                message = `Possible (~${Math.round(probability)}%)`;
+            } else if (moonAge <= 24) {
+                // Interpolate from 50% at 18 hrs to 70% at 24 hrs
+                probability = 50 + ((moonAge - 18) / (24 - 18)) * (70 - 50);
+                message = `Likely (~${Math.round(probability)}%)`;
+            } else {
+                probability = 90;
+                message = `Easily Visible (~${probability}%)`;
+            }
+            return { probability, message };
+        }
+
+        // Calculate probability for illumination with custom thresholds (example values)
+        function calcIlluminationProbability(illumination) {
+            let probability, message;
+            if (illumination <= 1) {
+                probability = 5;
+                message = `Impossible (~${probability}%)`;
+            } else if (illumination <= 2) {
+                // Interpolate from 5% to 20%
+                probability = 5 + ((illumination - 1) / (2 - 1)) * (20 - 5);
+                message = `Difficult (~${Math.round(probability)}%)`;
+            } else if (illumination <= 3) {
+                // Interpolate from 20% to 50%
+                probability = 20 + ((illumination - 2) / (3 - 2)) * (50 - 20);
+                message = `Possible (~${Math.round(probability)}%)`;
+            } else if (illumination < 5) {
+                // Interpolate from 50% to 70%
+                probability = 50 + ((illumination - 3) / (5 - 3)) * (70 - 50);
+                message = `Likely (~${Math.round(probability)}%)`;
+            } else if (illumination <= 7) {
+                // Interpolate from 70% to 90%
+                probability = 70 + ((illumination - 5) / (7 - 5)) * (90 - 70);
+                message = `Very Likely (~${Math.round(probability)}%)`;
+            } else {
+                probability = 90;
+                message = `Easily Visible (~${probability}%)`;
+            }
+            return { probability, message };
+        }
+
+        // Calculate probability for angularDiameter with custom thresholds (example values)
+        function calcAngularDiameterProbability(angularDiameter) {
+            let probability, message;
+            if (angularDiameter < 0.5) {
+                probability = 5;
+                message = `Impossible (~${probability}%)`;
+            } else if (angularDiameter <= 0.52) {
+                // Interpolate from 5% to 25%
+                probability = 5 + ((angularDiameter - 0.5) / (0.52 - 0.5)) * (25 - 5);
+                message = `Extremely Difficult (~${Math.round(probability)}%)`;
+            } else if (angularDiameter < 0.53) {
+                // Interpolate from 25% to 50%
+                probability = 25 + ((angularDiameter - 0.52) / (0.53 - 0.52)) * (50 - 25);
+                message = `Possible (~${Math.round(probability)}%)`;
+            } else if (angularDiameter <= 0.55) {
+                // Interpolate from 50% to 70%
+                probability = 50 + ((angularDiameter - 0.53) / (0.55 - 0.53)) * (70 - 50);
+                message = `Likely (~${Math.round(probability)}%)`;
+            } else {
+                probability = 90;
+                message = `Easily Visible (~${probability}%)`;
+            }
+            return { probability, message };
+        }
+
+        let finalProbability = 0;
+        // Combine the probabilities from all three parameters into a final probability.
+        // Here we simply average the three probabilities. You could adjust this with weights if desired.
+        function calculateFinalProbability(moonAge, illumination, angularDiameter) {
+            const moon = calcMoonAgeProbability(moonAge);
+            const illum = calcIlluminationProbability(illumination);
+            const angDia = calcAngularDiameterProbability(angularDiameter);
+
+            // Simple average of the three probabilities.
+            finalProbability = (moon.probability + illum.probability + angDia.probability) / 3;
+
+            // Choose a final message based on the final probability value.
+            let finalMessage;
+            if (finalProbability < 20) {
+                finalMessage = `Impossible (~${Math.round(finalProbability)}%)`;
+            } else if (finalProbability < 40) {
+                finalMessage = `Extremely Difficult (~${Math.round(finalProbability)}%)`;
+            } else if (finalProbability < 60) {
+                finalMessage = `Possible (~${Math.round(finalProbability)}%)`;
+            } else if (finalProbability < 80) {
+                finalMessage = `Likely (~${Math.round(finalProbability)}%)`;
+            } else {
+                finalMessage = `Easily Visible (~${Math.round(finalProbability)}%)`;
+            }
+
+            return finalMessage;
+        }
+
+        // Helper function to convert a formatted string into a valid date
+        function parseDate(dateString, timezone) {
+            // Replace the month names with numbers (March -> 03, etc.)
+            const months = {
+                'January': '01', 'February': '02', 'March': '03', 'April': '04', 'May': '05', 'June': '06',
+                'July': '07', 'August': '08', 'September': '09', 'October': '10', 'November': '11', 'December': '12'
+            };
+
+            const regex = /([A-Za-z]+) (\d{1,2}), (\d{4}) (\d{1,2}):(\d{2}) (AM|PM)/;
+            const match = dateString.match(regex);
+
+            if (match) {
+                // Extract the parts of the date string
+                const monthName = match[1];
+                const day = match[2].padStart(2, '0');
+                const year = match[3];
+                let hour = parseInt(match[4]);
+                const minute = match[5];
+                const ampm = match[6];
+
+                // Convert to 24-hour format
+                if (ampm === 'PM' && hour < 12) {
+                    hour += 12;
+                }
+                if (ampm === 'AM' && hour === 12) {
+                    hour = 0;
+                }
+
+                // Format the date string as 'YYYY-MM-DDTHH:MM:SS'
+                const formattedDate = `${year}-${months[monthName]}-${day}T${hour.toString().padStart(2, '0')}:${minute}:00`;
+
+                // Create a Date object in UTC, adjusting for the timezone offset
+                const date = new Date(formattedDate);
+
+                // Use the timezone info to adjust the time (if needed)
+                const timeZoneOffset = new Date().toLocaleString("en-US", { timeZone: timezone });
+                const formattedDateWithTimezone = new Date(date.toLocaleString("en-US", { timeZone: timezone }));
+
+                return formattedDateWithTimezone;
+            }
+            return null; // Return null if the string does not match the pattern
+        }
+    </script>
+
+</body>
+
+</html>
