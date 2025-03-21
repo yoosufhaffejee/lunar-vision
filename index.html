@@ -5,55 +5,408 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lunar Vision</title>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin: 20px;
+        :root {
+            --primary: #1a2a3a;
+            --secondary: #2c3e50;
+            --accent: #3498db;
+            --accent-light: #5dade2;
+            --text: #ecf0f1;
+            --text-secondary: #bdc3c7;
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --card-bg: rgba(15, 23, 42, 0.85);
+            --card-border: rgba(255, 255, 255, 0.1);
         }
 
-        .container {
-            max-width: 500px;
-            margin: auto;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            color: var(--text);
+            background-color: var(--primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+            background-image: url('https://hebbkx1anhila5yf.public.blob.vercel-storage.com/8deec70cff780fe56d1365915016af45.jpg-1K2yWu0WJBCrXiVKaZir4S7Ip9qSgq.jpeg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: -1;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: white;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+            letter-spacing: 1px;
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--card-border);
+            margin-bottom: 30px;
+        }
+
+        .card-header {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .card-header h2 {
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-header h2 i {
+            color: var(--accent);
+        }
+
+        .card-body {
+            padding: 25px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        .input-group i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--accent);
         }
 
         select,
-        button,
         input {
-            margin: 10px;
-            padding: 10px;
             width: 100%;
-            max-width: 100%;
-            /* Ensure it does not overflow */
-            box-sizing: border-box;
-            /* Include padding and borders in the width */
+            padding: 12px 15px 12px 45px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.2);
+            color: var(--text);
+            font-size: 1rem;
+            transition: all 0.3s ease;
         }
 
-        .result {
+        select:focus,
+        input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.3);
+        }
+
+        select option {
+            background-color: var(--secondary);
+            color: var(--text);
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            border-radius: 8px;
+            border: none;
+            background: var(--accent);
+            color: white;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        button:hover {
+            background: var(--accent-light);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .result-card {
+            display: none;
+        }
+
+        .result-card.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .result-header h3 {
+            font-size: 1.2rem;
+            color: var(--text);
+        }
+
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .result-item {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid var(--card-border);
+        }
+
+        .result-item .label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .result-item .value {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .visibility-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
             margin-top: 20px;
-            font-weight: bold;
+            padding: 15px;
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .visibility-indicator i {
+            font-size: 2rem;
+        }
+
+        .visibility-indicator.impossible {
+            border-left: 4px solid var(--danger);
+        }
+
+        .visibility-indicator.difficult {
+            border-left: 4px solid var(--warning);
+        }
+
+        .visibility-indicator.possible {
+            border-left: 4px solid var(--accent);
+        }
+
+        .visibility-indicator.likely {
+            border-left: 4px solid var(--success);
+        }
+
+        .visibility-text {
+            flex: 1;
+        }
+
+        .visibility-text h4 {
+            margin-bottom: 5px;
+        }
+
+        .visibility-text p {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .loader {
+            display: none;
+            width: 48px;
+            height: 48px;
+            border: 5px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top-color: var(--accent);
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .result-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .card-body {
+                padding: 20px;
+            }
+        }
+
+        /* Dark mode toggle */
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--card-border);
+            color: var(--text);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            background: rgba(0, 0, 0, 0.5);
         }
     </style>
 </head>
 
 <body>
+    <div class="app-container">
+        <div class="header">
+            <h1><i class="fas fa-moon"></i> Lunar Vision</h1>
+            <p>Predict moon sighting visibility with precision astronomical calculations</p>
+        </div>
 
-    <div class="container">
-        <h2>Lunar Vision - Moon Sighting Predictor</h2>
+        <div class="card">
+            <div class="card-header">
+                <h2><i class="fas fa-search"></i> Moon Sighting Predictor</h2>
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <label for="country">Select Location</label>
+                    <div class="input-group">
+                        <i class="fas fa-globe-americas"></i>
+                        <select id="country"></select>
+                    </div>
+                </div>
 
-        <label for="country">Select Country:</label>
-        <select id="country"></select>
+                <div class="form-group">
+                    <label for="moonSightingDatetime">Sunset Time (Optional)</label>
+                    <div class="input-group">
+                        <i class="far fa-calendar-alt"></i>
+                        <input type="datetime-local" id="moonSightingDatetime">
+                    </div>
+                </div>
 
-        <label for="moonSightingDatetime">Enter Sunset Time (Optional):</label>
-        <input type="datetime-local" id="moonSightingDatetime">
+                <button id="predictBtn" onclick="predictMoonSighting()">
+                    <i class="fas fa-telescope"></i> Check Moon Visibility
+                </button>
+            </div>
+        </div>
 
-        <button onclick="predictMoonSighting()">Check Moon Visibility</button>
+        <div class="loader" id="loader"></div>
 
-        <div class="result" id="result"></div>
+        <div class="card result-card" id="resultCard">
+            <div class="card-header">
+                <h2><i class="fas fa-chart-bar"></i> Visibility Analysis</h2>
+            </div>
+            <div class="card-body">
+                <div id="result"></div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>© 2025 Lunar Vision | Astronomical Calculations & Moon Sighting Predictions</p>
+        </div>
     </div>
 
     <script>
@@ -65,100 +418,99 @@
             document.getElementById('moonSightingDatetime').value = formattedDate;
         }
 
-        // Call the function to set the current datetime when the page loads
-        //setCurrentDatetime();
-
         // Country to country code map (You can add more as needed)
         const countryCodes = {
-            "za": "South Africa",
+            "ar": "Argentina",
             "au": "Australia",
-            "sa": "Saudi Arabia",
-            "pk": "Pakistan",
-            "my": "Malaysia",
-            "us": "USA",
-            "ae": "United Arab Emirates",
+            "at": "Austria",
+            "by": "Belarus",
+            "be": "Belgium",
+            "ba": "Bosnia and Herzegovina",
+            "br": "Brazil",
+            "bg": "Bulgaria",
+            "ca": "Canada",
+            "cl": "Chile",
+            "cn": "China",
+            "co": "Colombia",
+            "cy": "Cyprus",
+            "cz": "Czech Republic",
+            "dk": "Denmark",
+            "do": "Dominican Republic",
             "eg": "Egypt",
-            "in": "India",
-            "ng": "Nigeria",
-            "sg": "Singapore",
+            "ee": "Estonia",
+            "fi": "Finland",
             "fr": "France",
             "de": "Germany",
-            "gb": "United Kingdom",
-            "br": "Brazil",
-            "ca": "Canada",
-            "id": "Indonesia",
-            "ir": "Iran",
-            "tr": "Turkey",
-            "iq": "Iraq",
-            "sy": "Syria",
-            "pk": "Pakistan",
-            "dz": "Algeria",
-            "ma": "Morocco",
-            "bd": "Bangladesh",
-            "ke": "Kenya",
-            "jo": "Jordan",
-            "tn": "Tunisia",
-            "ly": "Libya",
-            "ps": "Palestine",
-            "lk": "Sri Lanka",
-            "uz": "Uzbekistan",
-            "ye": "Yemen",
-            "af": "Afghanistan",
-            "mm": "Myanmar",
-            "kh": "Cambodia",
-            "mn": "Mongolia",
-            "bh": "Bahrain",
-            "qa": "Qatar",
-            "om": "Oman",
-            "kw": "Kuwait",
-            "lv": "Latvia",
-            "ch": "Switzerland",
-            "cz": "Czech Republic",
-            "es": "Spain",
-            "it": "Italy",
-            "fi": "Finland",
-            "nl": "Netherlands",
-            "se": "Sweden",
-            "dk": "Denmark",
-            "be": "Belgium",
-            "at": "Austria",
-            "pt": "Portugal",
             "gr": "Greece",
-            "ru": "Russia",
-            "bg": "Bulgaria",
-            "mx": "Mexico",
-            "ph": "Philippines",
-            "th": "Thailand",
-            "ba": "Bosnia and Herzegovina",
-            "xk": "Kosovo",
-            "al": "Albania",
-            "et": "Ethiopia",
-            "so": "Somalia",
-            "tz": "Tanzania",
-            "mr": "Mauritania",
-            "mw": "Malawi",
-            "sn": "Senegal",
-            "gm": "Gambia",
+            "hu": "Hungary",
+            "is": "Iceland",
+            "in": "India",
+            "id": "Indonesia",
+            "ie": "Ireland",
+            "il": "Israel",
+            "it": "Italy",
+            "jp": "Japan",
+            "ke": "Kenya",
+            "kr": "South Korea",
+            "lv": "Latvia",
+            "lt": "Lithuania",
+            "li": "Liechtenstein",
+            "lu": "Luxembourg",
+            "mg": "Madagascar",
+            "my": "Malaysia",
             "ml": "Mali",
-            "ne": "Niger",
-            "sd": "Sudan",
-            "tj": "Tajikistan",
-            "kg": "Kyrgyzstan",
-            "kz": "Kazakhstan",
-            "tm": "Turkmenistan",
-            "lb": "Lebanon",
-            "az": "Azerbaijan",
-            "am": "Armenia"
+            "ma": "Morocco",
+            "md": "Moldova",
+            "mx": "Mexico",
+            "nl": "Netherlands",
+            "nz": "New Zealand",
+            "ng": "Nigeria",
+            "no": "Norway",
+            "pk": "Pakistan",
+            "pe": "Peru",
+            "ph": "Philippines",
+            "pl": "Poland",
+            "pt": "Portugal",
+            "qa": "Qatar",
+            "ro": "Romania",
+            "ru": "Russia",
+            "sa": "Saudi Arabia",
+            "rs": "Serbia",
+            "sg": "Singapore",
+            "sk": "Slovakia",
+            "si": "Slovenia",
+            "za": "South Africa",
+            "es": "Spain",
+            "se": "Sweden",
+            "ch": "Switzerland",
+            "ch-fr": "Switzerland (French)",
+            "ch-it": "Switzerland (Italian)",
+            "tw": "Taiwan",
+            "th": "Thailand",
+            "tr": "Turkey",
+            "ua": "Ukraine",
+            "gb": "United Kingdom",
+            "us": "United States",
+            "uz": "Uzbekistan",
+            "ve": "Venezuela"
         };
 
         // Dynamically generate options for the country select dropdown
         const countrySelect = document.getElementById('country');
+
         for (const code in countryCodes) {
             const option = document.createElement('option');
             option.value = code;
             option.textContent = countryCodes[code];
+
+            // Set South Africa (za) as the default selected option
+            if (code === "za") {
+                option.selected = true;
+            }
+
             countrySelect.appendChild(option);
         }
+
         async function getWeatherData(lat, lon, sightingDate) {
             try {
                 const response = await fetch(`https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=${lat}&lon=${lon}`, {
@@ -229,13 +581,13 @@
             const countryCode = document.getElementById('country').value;
             const resultDiv = document.getElementById('result');
             const sightingDatetime = document.getElementById('moonSightingDatetime').value;
-
-            // Check if datetime input is provided
-            // if (!sightingDatetime) {
-            //     resultDiv.innerHTML = "Error: Please enter a moon sighting datetime.";
-            //     return;
-            // }
-
+            const loader = document.getElementById('loader');
+            const resultCard = document.getElementById('resultCard');
+            
+            // Show loader, hide results
+            loader.style.display = 'block';
+            resultCard.classList.remove('active');
+            
             // Fetch the moon data for the selected country
             try {
                 const response = await fetch(`https://gh-pages-cors.haffejeeyoosuf1.workers.dev/?https://calendar-yearly.com/moon/${countryCode.toLowerCase()}/2025`);
@@ -249,13 +601,22 @@
                 const timezoneElements = doc.querySelectorAll('.text-gray-600.font-bold.text-right.pr-4');
                 const timezoneElement = timezoneElements[5] ? timezoneElements[5].nextElementSibling : null; // Get the 6th div's next sibling (timezone value)
 
-
                 // Get the new moon date (the third element with the class "px-7 pt-1 font-semibold")
                 const newMoonElements = doc.querySelectorAll('.px-7.pt-1.font-semibold');
                 const newMoonElement = newMoonElements[2];  // 3rd one
 
                 if (!newMoonElement || !timezoneElement) {
-                    resultDiv.innerHTML = "Error: Unable to find new moon data.";
+                    resultDiv.innerHTML = `
+                        <div class="visibility-indicator impossible">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <div class="visibility-text">
+                                <h4>Error</h4>
+                                <p>Unable to find new moon data. Please try again.</p>
+                            </div>
+                        </div>
+                    `;
+                    loader.style.display = 'none';
+                    resultCard.classList.add('active');
                     return;
                 }
 
@@ -286,7 +647,17 @@
                 const moonData = await apiResponse.json();
 
                 if (moonData.length === 0 || moonData[0].Error) {
-                    resultDiv.innerHTML = "Error fetching moon phase data.";
+                    resultDiv.innerHTML = `
+                        <div class="visibility-indicator impossible">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <div class="visibility-text">
+                                <h4>Error</h4>
+                                <p>Error fetching moon phase data. Please try again.</p>
+                            </div>
+                        </div>
+                    `;
+                    loader.style.display = 'none';
+                    resultCard.classList.add('active');
                     return;
                 }
 
@@ -295,9 +666,8 @@
 
                 // Get moon data
                 const moonInfo = moonData[0];
-
+                
                 // Convert moon age from days to hours
-                //const moonAge = moonInfo.Age * 24;
                 const moonAge = (sightingDate - newMoonDate) / (1000 * 60 * 60); // Convert ms to hours
 
                 // Convert illumination to percentage
@@ -307,41 +677,122 @@
                 const angularDiameter = moonInfo.AngularDiameter;
 
                 const sightingProbability = calculateFinalProbability(moonAge, illumination, angularDiameter);
+                const sightingProbabilityPercentage = finalProbability;
 
                 // Adjust for cloud cover if provided.
                 let cloudMessage = "";
+                let cloudAdjustedProbability = finalProbability;
+                
                 if (cloudCover !== null) {
                     if (cloudCover > 80) {
-                        finalProbability = Math.max(finalProbability - 50, 0);
-                        cloudMessage = `Unlikely in your area (~${Math.round(finalProbability)}%) - Cloudy Sky`;
+                        cloudAdjustedProbability = Math.max(finalProbability - 50, 0);
+                        cloudMessage = `Unlikely in your area (~${Math.round(cloudAdjustedProbability)}%) - Cloudy Sky`;
                     } else if (cloudCover > 50) {
                         // For partly cloudy skies, reduce the final probability by 10%
-                        finalProbability = Math.max(finalProbability - 15, 0);
-                        cloudMessage = `(~${Math.round(finalProbability)}%) - Partly Cloudy`;
+                        cloudAdjustedProbability = Math.max(finalProbability - 15, 0);
+                        cloudMessage = `(~${Math.round(cloudAdjustedProbability)}%) - Partly Cloudy`;
                     }
                     else if (cloudCover > 25) {
-                        finalProbability = Math.max(finalProbability - 5, 0);
-                        cloudMessage = `(~${Math.round(finalProbability)}%) - Mostly Clear`;
+                        cloudAdjustedProbability = Math.max(finalProbability - 5, 0);
+                        cloudMessage = `(~${Math.round(cloudAdjustedProbability)}%) - Mostly Clear`;
                     }
                     else {
-                        cloudMessage = `(~${Math.round(finalProbability)}%) - Clear Skies`;
+                        cloudMessage = `(~${Math.round(cloudAdjustedProbability)}%) - Clear Skies`;
                     }
+                }
+
+                // Determine the likely start date of the new lunar month
+                const likelyStartDate = sightingProbabilityPercentage > 50 ? 
+                    sightingDate.toLocaleDateString() : 
+                    new Date(sightingDate.getTime() + 86400000).toLocaleDateString();
+
+                // Determine visibility class for styling
+                let visibilityClass = "impossible";
+                let visibilityIcon = "fa-times-circle";
+                
+                if (finalProbability >= 80) {
+                    visibilityClass = "likely";
+                    visibilityIcon = "fa-check-circle";
+                } else if (finalProbability >= 60) {
+                    visibilityClass = "likely";
+                    visibilityIcon = "fa-check";
+                } else if (finalProbability >= 40) {
+                    visibilityClass = "possible";
+                    visibilityIcon = "fa-question-circle";
+                } else if (finalProbability >= 20) {
+                    visibilityClass = "difficult";
+                    visibilityIcon = "fa-exclamation-triangle";
                 }
 
                 // Display results
                 resultDiv.innerHTML = `
-                    <p><strong>New Moon Born:</strong> ${newMoonDate}</p>
-
-                    <p><strong>Moon Age (Sunset):</strong> ${moonAge.toFixed(2)} hours</p>
-                    <p><strong>Illumination (Sunset):</strong> ${illumination.toFixed(1)}%</p>
-                    <p><strong>Angular Diameter (Sunset):</strong> ${angularDiameter.toFixed(2)}°</p>
-                    <p><strong>Cloud Cover (Sunset):</strong> ${cloudCover?.toFixed(1)}%</p>
-                    <p><strong>Estimated Visibility (Sunset):</strong> ${sightingProbability}</p>
-                    <p><strong>Estimated Visibility With Cloud Cover (Your Location):</strong> ${cloudMessage}</p>
+                    <div class="result-header">
+                        <h3>Moon Visibility Analysis</h3>
+                    </div>
+                    
+                    <div class="result-grid">
+                        <div class="result-item">
+                            <div class="label"><i class="fas fa-calendar-day"></i> New Moon Born</div>
+                            <div class="value">${newMoonDate.toLocaleString()}</div>
+                        </div>
+                        
+                        <div class="result-item">
+                            <div class="label"><i class="fas fa-hourglass-half"></i> Moon Age</div>
+                            <div class="value">${moonAge.toFixed(2)} hours</div>
+                        </div>
+                        
+                        <div class="result-item">
+                            <div class="label"><i class="fas fa-adjust"></i> Illumination</div>
+                            <div class="value">${illumination.toFixed(1)}%</div>
+                        </div>
+                        
+                        <div class="result-item">
+                            <div class="label"><i class="fas fa-ruler-combined"></i> Angular Diameter</div>
+                            <div class="value">${angularDiameter.toFixed(2)}°</div>
+                        </div>
+                        
+                        ${cloudCover !== null ? `
+                        <div class="result-item">
+                            <div class="label"><i class="fas fa-cloud"></i> Cloud Cover</div>
+                            <div class="value">${cloudCover.toFixed(1)}%</div>
+                        </div>
+                        ` : ''}
+                    </div>
+                    
+                    <div class="visibility-indicator ${visibilityClass}">
+                        <i class="fas ${visibilityIcon}"></i>
+                        <div class="visibility-text">
+                            <h4>Estimated Visibility: ${sightingProbability}</h4>
+                            ${cloudCover !== null ? `<p>Local Conditions: ${cloudMessage}</p>` : ''}
+                        </div>
+                    </div>
+                    
+                    <div class="visibility-indicator likely" style="margin-top: 15px;">
+                        <i class="fas fa-calendar-check"></i>
+                        <div class="visibility-text">
+                            <h4>New Lunar Month Start Date</h4>
+                            <p>${likelyStartDate} (After Sunset)</p>
+                        </div>
+                    </div>
                 `;
+                
+                // Hide loader, show results
+                loader.style.display = 'none';
+                resultCard.classList.add('active');
+                
             } catch (error) {
-                resultDiv.innerHTML = "Error fetching data. Please try again.";
+                resultDiv.innerHTML = `
+                    <div class="visibility-indicator impossible">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <div class="visibility-text">
+                            <h4>Error</h4>
+                            <p>Error fetching data. Please try again.</p>
+                        </div>
+                    </div>
+                `;
                 console.error(error);
+                loader.style.display = 'none';
+                resultCard.classList.add('active');
             }
         }
 
@@ -499,3 +950,4 @@
 </body>
 
 </html>
+
