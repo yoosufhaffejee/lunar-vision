@@ -590,8 +590,17 @@
             
             // Fetch the moon data for the selected country
             try {
-                const response = await fetch(`https://gh-pages-cors.haffejeeyoosuf1.workers.dev/?https://calendar-yearly.com/moon/${countryCode.toLowerCase()}/2025`);
-                const html = await response.text();
+                let html = "";
+                try {
+                    const response = await fetch(`https://gh-pages-cors.haffejeeyoosuf1.workers.dev/?https://calendar-yearly.com/moon/${countryCode.toLowerCase()}/2025`);
+                    html = await response.text();
+                }
+                catch (error) {
+                    const response = await fetch(`https://gh-pages-cors.haffejeeyoosuf1.workers.dev/?https://calendar-yearly.com/moon/${countryCode.toLowerCase()}/2025`);
+                    html = await response.text();
+                    console.log(error);
+                }
+                
 
                 // Parse the HTML response and extract the required details
                 const parser = new DOMParser();
@@ -905,45 +914,60 @@
 
         // Helper function to convert a formatted string into a valid date
         function parseDate(dateString, timezone) {
-            // Replace the month names with numbers (March -> 03, etc.)
             const months = {
                 'January': '01', 'February': '02', 'March': '03', 'April': '04', 'May': '05', 'June': '06',
-                'July': '07', 'August': '08', 'September': '09', 'October': '10', 'November': '11', 'December': '12'
+                'July': '07', 'August': '08', 'September': '09', 'October': '10', 'November': '11', 'December': '12',
+                'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04', 'May': '05', 'Jun': '06',
+                'Jul': '07', 'Aug': '08', 'Sep': '09', 'Oct': '10', 'Nov': '11', 'Dec': '12'
             };
 
-            const regex = /([A-Za-z]+) (\d{1,2}), (\d{4}) (\d{1,2}):(\d{2}) (AM|PM)/;
+            // Combined regex for both date formats
+            const regex = /(?:(\d{1,2}) ([A-Za-z]+) (\d{1,2}):(\d{2}))|(?:([A-Za-z]+) (\d{1,2}), (\d{4}) (\d{1,2}):(\d{2}) (AM|PM))/;
             const match = dateString.match(regex);
 
+            let year, month, day, hour, minute;
+
             if (match) {
-                // Extract the parts of the date string
-                const monthName = match[1];
-                const day = match[2].padStart(2, '0');
-                const year = match[3];
-                let hour = parseInt(match[4]);
-                const minute = match[5];
-                const ampm = match[6];
+                if (match[1]) {
+                    // Format: "29 Mar 12:58"
+                    day = match[1].padStart(2, '0');
+                    month = months[match[2]];
+                    year = new Date().getFullYear(); // Assume current year
+                    hour = match[3].padStart(2, '0');
+                    minute = match[4];
+                } else {
+                    // Format: "March 29, 2024 12:58 PM"
+                    month = months[match[5]];
+                    day = match[6].padStart(2, '0');
+                    year = match[7];
+                    hour = parseInt(match[8]);
+                    minute = match[9];
 
-                // Convert to 24-hour format
-                if (ampm === 'PM' && hour < 12) {
-                    hour += 12;
+                    // Convert 12-hour format to 24-hour format
+                    if (match[10] === 'PM' && hour < 12) hour += 12;
+                    if (match[10] === 'AM' && hour === 12) hour = 0;
+                    hour = hour.toString().padStart(2, '0');
                 }
-                if (ampm === 'AM' && hour === 12) {
-                    hour = 0;
-                }
-
-                // Format the date string as 'YYYY-MM-DDTHH:MM:SS'
-                const formattedDate = `${year}-${months[monthName]}-${day}T${hour.toString().padStart(2, '0')}:${minute}:00`;
-
-                // Create a Date object in UTC, adjusting for the timezone offset
-                const date = new Date(formattedDate);
-
-                // Use the timezone info to adjust the time (if needed)
-                const timeZoneOffset = new Date().toLocaleString("en-US", { timeZone: timezone });
-                const formattedDateWithTimezone = new Date(date.toLocaleString("en-US", { timeZone: timezone }));
-
-                return formattedDateWithTimezone;
+            } else {
+                // No match found, return today's date
+                const now = new Date();
+                year = now.getFullYear();
+                month = (now.getMonth() + 1).toString().padStart(2, '0');
+                day = now.getDate().toString().padStart(2, '0');
+                hour = now.getHours().toString().padStart(2, '0');
+                minute = now.getMinutes().toString().padStart(2, '0');
             }
-            return null; // Return null if the string does not match the pattern
+
+            // Format as 'YYYY-MM-DDTHH:MM:SS'
+            const formattedDate = `${year}-${month}-${day}T${hour}:${minute}:00`;
+
+            // Create a UTC Date object
+            const date = new Date(formattedDate);
+
+            // Adjust for the given timezone
+            const formattedDateWithTimezone = new Date(date.toLocaleString("en-US", { timeZone: timezone }));
+
+            return formattedDateWithTimezone;
         }
     </script>
 
