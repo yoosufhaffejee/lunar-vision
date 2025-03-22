@@ -397,7 +397,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="moonSightingDatetime">Sighting Datetime</label>
+                    <label for="moonSightingDatetime">Sighting Datetime (Optional)</label>
                     <div class="input-group">
                         <i class="far fa-calendar-alt"></i>
                         <input type="datetime-local" id="moonSightingDatetime">
@@ -437,95 +437,102 @@
 
         // Country to country code map (You can add more as needed)
         const countryCodes = {
-            "za": "South Africa",
+            "ar": "Argentina",
             "au": "Australia",
-            "sa": "Saudi Arabia",
-            "pk": "Pakistan",
-            "my": "Malaysia",
-            "us": "USA",
-            "ae": "United Arab Emirates",
+            "at": "Austria",
+            "by": "Belarus",
+            "be": "Belgium",
+            "ba": "Bosnia and Herzegovina",
+            "br": "Brazil",
+            "bg": "Bulgaria",
+            "ca": "Canada",
+            "cl": "Chile",
+            "cn": "China",
+            "co": "Colombia",
+            "cy": "Cyprus",
+            "cz": "Czech Republic",
+            "dk": "Denmark",
+            "do": "Dominican Republic",
             "eg": "Egypt",
-            "in": "India",
-            "ng": "Nigeria",
-            "sg": "Singapore",
+            "ee": "Estonia",
+            "fi": "Finland",
             "fr": "France",
             "de": "Germany",
-            "gb": "United Kingdom",
-            "br": "Brazil",
-            "ca": "Canada",
-            "id": "Indonesia",
-            "ir": "Iran",
-            "tr": "Turkey",
-            "iq": "Iraq",
-            "sy": "Syria",
-            "pk": "Pakistan",
-            "dz": "Algeria",
-            "ma": "Morocco",
-            "bd": "Bangladesh",
-            "ke": "Kenya",
-            "jo": "Jordan",
-            "tn": "Tunisia",
-            "ly": "Libya",
-            "ps": "Palestine",
-            "lk": "Sri Lanka",
-            "uz": "Uzbekistan",
-            "ye": "Yemen",
-            "af": "Afghanistan",
-            "mm": "Myanmar",
-            "kh": "Cambodia",
-            "mn": "Mongolia",
-            "bh": "Bahrain",
-            "qa": "Qatar",
-            "om": "Oman",
-            "kw": "Kuwait",
-            "lv": "Latvia",
-            "ch": "Switzerland",
-            "cz": "Czech Republic",
-            "es": "Spain",
-            "it": "Italy",
-            "fi": "Finland",
-            "nl": "Netherlands",
-            "se": "Sweden",
-            "dk": "Denmark",
-            "be": "Belgium",
-            "at": "Austria",
-            "pt": "Portugal",
             "gr": "Greece",
-            "ru": "Russia",
-            "bg": "Bulgaria",
-            "mx": "Mexico",
-            "ph": "Philippines",
-            "th": "Thailand",
-            "ba": "Bosnia and Herzegovina",
-            "xk": "Kosovo",
-            "al": "Albania",
-            "et": "Ethiopia",
-            "so": "Somalia",
-            "tz": "Tanzania",
-            "mr": "Mauritania",
-            "mw": "Malawi",
-            "sn": "Senegal",
-            "gm": "Gambia",
+            "hu": "Hungary",
+            "is": "Iceland",
+            "in": "India",
+            "id": "Indonesia",
+            "ie": "Ireland",
+            "il": "Israel",
+            "it": "Italy",
+            "jp": "Japan",
+            "ke": "Kenya",
+            "kr": "South Korea",
+            "lv": "Latvia",
+            "lt": "Lithuania",
+            "li": "Liechtenstein",
+            "lu": "Luxembourg",
+            "mg": "Madagascar",
+            "my": "Malaysia",
             "ml": "Mali",
-            "ne": "Niger",
-            "sd": "Sudan",
-            "tj": "Tajikistan",
-            "kg": "Kyrgyzstan",
-            "kz": "Kazakhstan",
-            "tm": "Turkmenistan",
-            "lb": "Lebanon",
-            "az": "Azerbaijan",
-            "am": "Armenia"
+            "ma": "Morocco",
+            "md": "Moldova",
+            "mx": "Mexico",
+            "nl": "Netherlands",
+            "nz": "New Zealand",
+            "ng": "Nigeria",
+            "no": "Norway",
+            "pk": "Pakistan",
+            "pe": "Peru",
+            "ph": "Philippines",
+            "pl": "Poland",
+            "pt": "Portugal",
+            "qa": "Qatar",
+            "ro": "Romania",
+            "ru": "Russia",
+            "sa": "Saudi Arabia",
+            "rs": "Serbia",
+            "sg": "Singapore",
+            "sk": "Slovakia",
+            "si": "Slovenia",
+            "za": "South Africa",
+            "es": "Spain",
+            "se": "Sweden",
+            "ch": "Switzerland",
+            "ch-fr": "Switzerland (French)",
+            "ch-it": "Switzerland (Italian)",
+            "tw": "Taiwan",
+            "th": "Thailand",
+            "tr": "Turkey",
+            "ua": "Ukraine",
+            "gb": "United Kingdom",
+            "us": "United States",
+            "uz": "Uzbekistan",
+            "ve": "Venezuela"
         };
 
         // Dynamically generate options for the country select dropdown
         const countrySelect = document.getElementById('country');
+        const sightingDatetime = document.getElementById('moonSightingDatetime'); // The date field
+
         for (const code in countryCodes) {
             const option = document.createElement('option');
             option.value = code;
             option.textContent = countryCodes[code];
+
+            // Set South Africa (za) as the default selected option
+            if (code === "za") {
+                option.selected = true;
+            }
+
             countrySelect.appendChild(option);
         }
+
+        // Add event listener to reset the sightingDatetime when the country is changed
+        countrySelect.addEventListener('change', function () {
+            sightingDatetime.value = '';  // Reset the date field to an empty string
+        });
 
         // Populate year dropdown with past 5 years, current year, and future 5 years
         const yearSelect = document.getElementById('yearSelect');
@@ -836,14 +843,13 @@
                 const epochTime = Math.floor(new Date(sightingDate).getTime() / 1000);
 
                 let moonData = newMoonData;
-                if (newMoonEpochTime != epochTime)
-                {
+                if (newMoonEpochTime != epochTime) {
                     // Call the Farmsense API for moon phase data
                     const apiUrl = `https://gh-pages-cors.haffejeeyoosuf1.workers.dev/?https://api.farmsense.net/v1/moonphases/?d=${epochTime}`;
                     const apiResponse = await fetch(apiUrl);
                     moonData = await apiResponse.json();
                 }
-                
+
                 if (moonData.length === 0 || moonData[0].Error) {
                     resultDiv.innerHTML = `
                         <div class="visibility-indicator impossible">
@@ -886,7 +892,7 @@
                 else {
                     moonAge = moonInfo.Age * 24; // Convert days to hours
                 }
-                
+
                 // Convert illumination to percentage
                 const illumination = moonInfo.Illumination * 100;
 
