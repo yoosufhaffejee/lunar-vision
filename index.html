@@ -382,7 +382,7 @@
                     <div class="form-group" style="flex: 1;">
                         <label for="yearSelect">Year</label>
                         <div class="input-group">
-                            <i class="fas fa-calendar-year"></i>
+                            <i class="fas fa-calendar"></i>
                             <select id="yearSelect" required></select>
                         </div>
                     </div>
@@ -878,9 +878,15 @@
                 // Get moon data
                 const moonInfo = moonData[0];
 
+                let moonAge = 0;
                 // Convert moon age from days to hours
-                const moonAge = (newMoonDate - sightingDate) / (1000 * 60 * 60); // Convert ms to hours
-
+                if (sightingDate >= newMoonDate) {
+                    moonAge = (sightingDate - newMoonDate) / (1000 * 60 * 60); // Convert ms to hours
+                }
+                else {
+                    moonAge = moonInfo.Age * 24; // Convert days to hours
+                }
+                
                 // Convert illumination to percentage
                 const illumination = moonInfo.Illumination * 100;
 
